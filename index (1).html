@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BrainLift">
+<meta name="theme-color" content="#0d0f14">
+<link rel="manifest" href="manifest.json">
+<title>BrainLift</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0f14; --surface:#151820; --surface2:#1c2130; --border:#252c3d;
+  --text:#e8eaf2; --muted:#6b7394; --accent:#6ee7b7;
+  --math:#f59e0b; --math-dim:#3d2c0a;
+  --science:#10b981; --science-dim:#0a2e1f;
+  --english:#818cf8; --english-dim:#1a1a3e;
+  --history:#f87171; --history-dim:#2e0f0f;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-overflow-scrolling:touch;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(110,231,183,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(110,231,183,0.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+.app{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:24px 20px 80px;}
+@supports(padding-top:env(safe-area-inset-top)){
+  .app{padding-top:max(24px,env(safe-area-inset-top));}
+  .bottom-nav{padding-bottom:max(18px,env(safe-area-inset-bottom));}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.screen{display:none;animation:fadeUp 0.3s ease;}
+.screen.active{display:block;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 28px;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.5px;}
+.logo span{color:var(--accent);}
+.streak-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:16px;background:var(--accent);color:#0d1a14;border:none;border-radius:12px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.18s;margin-top:8px;}
+.btn-primary:hover{background:#a7f3d0;transform:translateY(-1px);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-outline{padding:14px 18px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.btn-outline:hover{border-color:var(--text);color:var(--text);}
+.btn-done{width:100%;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;transition:all 0.18s;}
+.btn-done:hover{border-color:var(--accent);color:var(--accent);}
+
+/* FORMS */
+.form-section{margin-bottom:24px;}
+.form-label{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:block;}
+.form-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--accent);}
+.form-input option{background:var(--surface);}
+
+/* ONBOARDING */
+.onboard-wrap{max-width:480px;margin:0 auto;padding:8px 0 40px;}
+.onboard-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:32px;text-align:center;}
+.onboard-logo span{color:var(--accent);}
+.ostep{display:none;animation:fadeUp 0.3s ease;}
+.ostep.active{display:block;}
+.ostep-step-tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+.ostep-icon{font-size:44px;margin-bottom:14px;}
+.ostep-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:10px;line-height:1.2;}
+.ostep-desc{color:var(--muted);font-size:15px;line-height:1.65;margin-bottom:20px;}
+.ostep-note{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+.ostep-note strong{color:var(--text);}
+.ostep-action-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:20px;}
+.oac-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+.oac-link{display:block;background:var(--accent);color:#0d1a14;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;padding:12px 16px;border-radius:10px;text-decoration:none;margin-bottom:10px;text-align:center;transition:background 0.15s;}
+.oac-link:hover{background:#a7f3d0;}
+.oac-sub{font-size:13px;color:var(--muted);}
+.oac-steps{display:flex;flex-direction:column;gap:10px;}
+.oac-step{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.5;}
+.oac-step > span{min-width:22px;height:22px;background:var(--accent);color:#0d1a14;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.oac-step a{color:var(--accent);}
+.oac-step strong{color:var(--text);}
+.ostep-btns{display:flex;gap:10px;margin-top:20px;}
+.ostep-already{text-align:center;margin-top:16px;font-size:13px;color:var(--muted);}
+.ostep-already span{color:var(--accent);cursor:pointer;font-weight:600;}
+.ostep-privacy{font-size:12px;color:var(--muted);margin-top:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;line-height:1.5;}
+.ostep-dots{display:flex;justify-content:center;gap:8px;margin-top:28px;}
+.odot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all 0.2s;}
+.odot.active{background:var(--accent);width:20px;border-radius:4px;}
+#keyError{color:#f87171;font-size:12px;margin-top:6px;display:none;}
+
+/* SETUP */
+.setup-title{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;line-height:1.1;margin-bottom:8px;}
+.setup-title em{font-style:normal;color:var(--accent);}
+.setup-sub{color:var(--muted);font-size:15px;margin-bottom:28px;}
+.subjects-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.subject-toggle{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;user-select:none;}
+.subject-toggle:hover{border-color:var(--muted);}
+.subject-toggle.active-math{border-color:var(--math);background:var(--math-dim);color:var(--math);}
+.subject-toggle.active-science{border-color:var(--science);background:var(--science-dim);color:var(--science);}
+.subject-toggle.active-english{border-color:var(--english);background:var(--english-dim);color:var(--english);}
+.subject-toggle.active-history{border-color:var(--history);background:var(--history-dim);color:var(--history);}
+.subject-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.levels-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.level-row{display:flex;flex-direction:column;gap:6px;}
+.level-sub-label{font-size:12px;color:var(--muted);}
+.col-math{color:var(--math);} .col-science{color:var(--science);} .col-english{color:var(--english);} .col-history{color:var(--history);}
+
+/* DASHBOARD */
+.dash-greeting{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:4px;}
+.dash-date{color:var(--muted);font-size:14px;margin-bottom:28px;}
+.subject-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+.subject-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;}
+.subject-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.subject-card.math::before{background:var(--math);}
+.subject-card.science::before{background:var(--science);}
+.subject-card.english::before{background:var(--english);}
+.subject-card.history::before{background:var(--history);}
+.sc-name{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.sc-level{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;}
+.sc-level span{font-size:13px;font-weight:400;color:var(--muted);margin-left:2px;}
+.sc-goal{font-size:12px;color:var(--muted);margin-top:4px;}
+.sc-progress{margin-top:10px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.sc-progress-bar{height:100%;border-radius:2px;transition:width 0.5s ease;}
+.math .sc-progress-bar{background:var(--math);}
+.science .sc-progress-bar{background:var(--science);}
+.english .sc-progress-bar{background:var(--english);}
+.history .sc-progress-bar{background:var(--history);}
+.today-card{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:24px;text-align:center;margin-bottom:16px;}
+.today-subject-badge{display:inline-flex;align-items:center;gap:7px;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px;}
+.bg-math{background:var(--math-dim);border:1px solid var(--math);}
+.bg-science{background:var(--science-dim);border:1px solid var(--science);}
+.bg-english{background:var(--english-dim);border:1px solid var(--english);}
+.bg-history{background:var(--history-dim);border:1px solid var(--history);}
+.today-label{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+.today-sub{color:var(--muted);font-size:14px;margin-bottom:20px;}
+.btn-go{display:inline-block;padding:14px 40px;background:var(--accent);color:#0d1a14;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.18s;}
+.btn-go:hover{background:#a7f3d0;transform:translateY(-1px);}
+.done-card{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;margin-bottom:16px;color:var(--muted);}
+.done-icon{font-size:36px;margin-bottom:10px;}
+
+/* QUIZ */
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.quiz-back{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.15s;}
+.quiz-back:hover{color:var(--text);border-color:var(--muted);}
+.quiz-subject-pill{border-radius:20px;padding:6px 16px;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;}
+.quiz-level-tag{color:var(--muted);font-size:13px;}
+.question-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px;min-height:120px;}
+.question-text{font-size:18px;line-height:1.6;}
+.question-loading{color:var(--muted);font-size:15px;}
+.loading-dots{display:inline-flex;gap:5px;margin-left:6px;}
+.loading-dots span{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:bounce 1.2s infinite;}
+.loading-dots span:nth-child(2){animation-delay:0.2s;}
+.loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.answer-area{display:flex;gap:10px;margin-bottom:20px;}
+.answer-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border-color 0.2s;resize:none;min-height:56px;}
+.answer-input:focus{border-color:var(--accent);}
+.btn-submit{padding:14px 22px;background:var(--accent);color:#0d1a14;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;white-space:nowrap;}
+.btn-submit:hover{background:#a7f3d0;}
+.btn-submit:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* RESULT */
+.result-icon{font-size:56px;text-align:center;margin-bottom:16px;}
+.result-verdict{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;text-align:center;margin-bottom:6px;}
+.result-verdict.correct{color:var(--accent);}
+.result-verdict.incorrect{color:#f87171;}
+.result-sub{text-align:center;color:var(--muted);font-size:15px;margin-bottom:24px;}
+.result-detail{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
+.result-detail h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.result-detail p{font-size:15px;line-height:1.6;}
+.level-change{display:flex;align-items:center;justify-content:center;gap:16px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
+.lc-before,.lc-after{text-align:center;}
+.lc-before span,.lc-after span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.lc-before strong,.lc-after strong{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;}
+.lc-arrow{font-size:22px;color:var(--muted);}
+.lc-after strong.up{color:var(--accent);}
+.lc-after strong.down{color:#f87171;}
+.lc-after strong.same{color:var(--muted);}
+
+/* HISTORY */
+.history-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:4px;}
+.history-sub{color:var(--muted);font-size:14px;margin-bottom:24px;}
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;}
+.hi-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hi-info{flex:1;}
+.hi-subject{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.hi-question{font-size:14px;margin-top:2px;}
+.hi-result{font-size:12px;font-weight:600;}
+.hi-result.correct{color:var(--accent);}
+.hi-result.incorrect{color:#f87171;}
+.hi-date{font-size:12px;color:var(--muted);}
+.btn-back-dash{background:none;border:none;color:var(--accent);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;padding:0;display:flex;align-items:center;gap:6px;}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,15,20,0.95);border-top:1px solid var(--border);backdrop-filter:blur(12px);display:flex;justify-content:center;gap:4px;padding:10px 20px 18px;z-index:10;}
+.nav-btn{flex:1;max-width:120px;background:none;border:none;border-radius:10px;padding:8px 0;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color 0.15s;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn:hover{color:var(--text);}
+.nav-icon{font-size:18px;}
+.nav-hidden{display:none!important;}
+
+/* MOBILE */
+@media(max-width:480px){
+  .app{padding:16px 16px 90px;}
+  .setup-title{font-size:26px;}
+  .answer-area{flex-direction:column;}
+  .btn-submit{width:100%;padding:14px;}
+  .question-text{font-size:16px;}
+  .dash-greeting{font-size:22px;}
+  .result-verdict{font-size:24px;}
+  .nav-btn{font-size:10px;}
+  .bottom-nav{padding:8px 16px max(16px,env(safe-area-inset-bottom));}
+}
+@media(max-height:500px){
+  .app{padding-bottom:20px;}
+  .bottom-nav{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">Brain<span>Lift</span></div>
+    <div class="streak-badge" id="streakBadge">
+      <span>&#x1F525;</span>
+      <span id="streakCount">0 day streak</span>
+    </div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div class="screen active" id="screen-onboarding">
+    <div class="onboard-wrap">
+      <div class="onboard-logo">Brain<span>Lift</span></div>
+      <div id="onboardSteps">
+
+        <div class="ostep active" id="ostep-1">
+          <div class="ostep-icon">&#x1F9E0;</div>
+          <div class="ostep-title">Welcome to BrainLift</div>
+          <div class="ostep-desc">BrainLift uses Claude AI to generate personalized quiz questions every day. To power it, you need your own free API key — takes about 2 minutes to set up.</div>
+          <div class="ostep-note">&#x1F4B0; Cost: roughly <strong>$5 lasts months</strong> of daily use.</div>
+          <button class="btn-primary" onclick="goOStep(2)">Let's set it up &#x2192;</button>
+          <div class="ostep-already">Already have a key? <span onclick="goOStep(4)">Skip to enter it</span></div>
+        </div>
+
+        <div class="ostep" id="ostep-2">
+          <div class="ostep-step-tag">Step 1 of 3</div>
+          <div class="ostep-icon">&#x1F464;</div>
+          <div class="ostep-title">Create an Anthropic account</div>
+          <div class="ostep-desc">Go to Anthropic's console and sign up with your email address. It's free to create an account.</div>
+          <div class="ostep-action-card">
+            <div class="oac-label">Open this link:</div>
+            <a class="oac-link" href="https://console.anthropic.com" target="_blank">console.anthropic.com &#x2192;</a>
+            <div class="oac-sub">Click "Sign up" and create your account. Come back here when done.</div>
+          </div>
+          <div class="ostep-btns">
+            <button class="btn-outline" onclick="goOStep(1)">&#x2190; Back</button>
+            <button class="btn-primary" onclick="goOStep(3)" style="flex:1">I made my account &#x2192;</button>
+          </div>
+        </div>
+
+        <div class="ostep" id="ostep-3">
+          <div class="ostep-step-tag">Step 2 of 3</div>
+          <div class="ostep-icon">&#x1F4B3;</div>
+          <div class="ostep-title">Add a small amount of credit</div>
+          <div class="ostep-desc">Add just $5 of credit — it will last months at this usage level.</div>
+          <div class="ostep-action-card">
+            <div class="oac-steps">
+              <div class="oac-step"><span>1</span> Log into <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
+              <div class="oac-step"><span>2</span> Click <strong>Billing</strong> in the left sidebar</div>
+              <div class="oac-step"><span>3</span> Add $5 of credit with a card</div>
+              <div class="oac-step"><span>4</span> Optionally set a $5 spending limit for peace of mind</div>
+            </div>
+          </div>
+          <div class="ostep-btns">
+            <button class="btn-outline" onclick="goOStep(2)">&#x2190; Back</button>
+            <button class="btn-primary" onclick="goOStep(4)" style="flex:1">I added credit &#x2192;</button>
+          </div>
+        </div>
+
+        <div class="ostep" id="ostep-4">
+          <div class="ostep-step-tag">Step 3 of 3</div>
+          <div class="ostep-icon">&#x1F511;</div>
+          <div class="ostep-title">Create and paste your API key</div>
+          <div class="ostep-desc">Create your key and paste it below. It starts with <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:13px">sk-ant-</code></div>
+          <div class="ostep-action-card">
+            <div class="oac-steps">
+              <div class="oac-step"><span>1</span> Go to <a href="https://console.anthropic.com/settings/keys" target="_blank">API Keys</a> in the console</div>
+              <div class="oac-step"><span>2</span> Click <strong>Create Key</strong> and name it "BrainLift"</div>
+              <div class="oac-step"><span>3</span> <strong>Copy the key immediately</strong> — you only see it once!</div>
+              <div class="oac-step"><span>4</span> Paste it in the box below</div>
+            </div>
+          </div>
+          <div class="form-section" style="margin-top:16px;margin-bottom:0">
+            <label class="form-label">Paste your API key</label>
+            <div style="position:relative">
+              <input class="form-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..."/>
+              <button onclick="toggleKeyVis()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px">&#x1F441;</button>
+            </div>
+            <div id="keyError"></div>
+          </div>
+          <div class="ostep-privacy">&#x1F512; Your key is stored only on this device — never sent anywhere except directly to Anthropic.</div>
+          <div class="ostep-btns" style="margin-top:16px">
+            <button class="btn-outline" onclick="goOStep(3)">&#x2190; Back</button>
+            <button class="btn-primary" onclick="validateAndContinue()" style="flex:1">Continue &#x2192;</button>
+          </div>
+        </div>
+
+      </div>
+      <div class="ostep-dots">
+        <span class="odot active" id="dot-1"></span>
+        <span class="odot" id="dot-2"></span>
+        <span class="odot" id="dot-3"></span>
+        <span class="odot" id="dot-4"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="screen" id="screen-setup">
+    <div class="setup-title">Level up <em>every</em> day.</div>
+    <p class="setup-sub">Answer one question per subject per day. The harder you push, the higher you climb.</p>
+
+    <div class="form-section">
+      <label class="form-label">API Key</label>
+      <div style="position:relative">
+        <input class="form-input" type="password" id="apiKeyDisplay" readonly style="opacity:0.6;padding-right:80px"/>
+        <button onclick="goToOnboarding()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer">Change</button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Your Name</label>
+      <input class="form-input" type="text" id="nameInput" placeholder="e.g. Alex"/>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Grade Level</label>
+      <select class="form-input" id="gradeInput">
+        <option value="6">6th Grade</option>
+        <option value="7">7th Grade</option>
+        <option value="8">8th Grade</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Subjects to include</label>
+      <div class="subjects-grid">
+        <div class="subject-toggle active-math" data-subject="math" onclick="toggleSubject(this)"><span class="subject-dot" style="background:var(--math)"></span> Math</div>
+        <div class="subject-toggle active-science" data-subject="science" onclick="toggleSubject(this)"><span class="subject-dot" style="background:var(--science)"></span> Science</div>
+        <div class="subject-toggle active-english" data-subject="english" onclick="toggleSubject(this)"><span class="subject-dot" style="background:var(--english)"></span> English</div>
+        <div class="subject-toggle active-history" data-subject="history" onclick="toggleSubject(this)"><span class="subject-dot" style="background:var(--history)"></span> History</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Current Levels (1-10)</label>
+      <div class="levels-grid">
+        <div class="level-row" id="lvl-math"><span class="level-sub-label col-math">Math</span>
+          <select class="form-input" id="level-math"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+        </div>
+        <div class="level-row" id="lvl-science"><span class="level-sub-label col-science">Science</span>
+          <select class="form-input" id="level-science"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+        </div>
+        <div class="level-row" id="lvl-english"><span class="level-sub-label col-english">English</span>
+          <select class="form-input" id="level-english"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+        </div>
+        <div class="level-row" id="lvl-history"><span class="level-sub-label col-history">History</span>
+          <select class="form-input" id="level-history"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Goal Level</label>
+      <select class="form-input" id="goalInput">
+        <option value="1">1 - Beginner</option><option value="2">2 - Beginner+</option><option value="3">3 - Easy</option><option value="4">4 - Easy+</option><option value="5">5 - Mid</option><option value="6">6 - Mid+</option><option value="7">7 - Advanced</option><option value="8" selected>8 - Advanced+</option><option value="9">9 - Expert</option><option value="10">10 - Master</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" onclick="startApp()">Start My Journey &#x2192;</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="screen-dashboard">
+    <div class="dash-greeting" id="dashGreeting">Hey there! &#x1F44B;</div>
+    <div class="dash-date" id="dashDate"></div>
+    <div class="subject-cards" id="subjectCards"></div>
+    <div id="todaySection"></div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <button class="quiz-back" onclick="showScreen('dashboard')">&#x2190; Back</button>
+      <div class="quiz-subject-pill" id="quizSubjectPill"></div>
+      <div class="quiz-level-tag" id="quizLevelTag"></div>
+    </div>
+    <div class="question-box" id="questionBox">
+      <div class="question-loading">Generating your question<span class="loading-dots"><span></span><span></span><span></span></span></div>
+    </div>
+    <div class="answer-area">
+      <textarea class="answer-input" id="answerInput" placeholder="Type your answer here..." rows="2"></textarea>
+      <button class="btn-submit" id="submitBtn" onclick="submitAnswer()" disabled>Submit</button>
+    </div>
+    <div style="color:var(--muted);font-size:12px;text-align:center">Press Enter to submit</div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <div class="result-icon" id="resultIcon"></div>
+    <div class="result-verdict" id="resultVerdict"></div>
+    <div class="result-sub" id="resultSub"></div>
+    <div class="result-detail" id="resultExplanation"></div>
+    <div class="level-change" id="levelChange"></div>
+    <button class="btn-done" onclick="showScreen('dashboard')">Back to Dashboard</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="screen-history">
+    <button class="btn-back-dash" onclick="showScreen('dashboard')">&#x2190; Dashboard</button>
+    <div class="history-title">History</div>
+    <div class="history-sub">Your past questions and results</div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="screen-settings">
+    <button class="btn-back-dash" onclick="showScreen('dashboard')">&#x2190; Dashboard</button>
+    <div class="history-title">Settings</div>
+    <div class="history-sub">Adjust your profile anytime</div>
+    <div class="form-section"><label class="form-label">Name</label><input class="form-input" type="text" id="settingsName"/></div>
+    <div class="form-section"><label class="form-label">Grade Level</label>
+      <select class="form-input" id="settingsGrade"><option value="6">6th Grade</option><option value="7">7th Grade</option><option value="8">8th Grade</option></select>
+    </div>
+    <div class="form-section"><label class="form-label">Goal Level</label>
+      <select class="form-input" id="settingsGoal">
+        <option value="1">1 - Beginner</option><option value="2">2 - Beginner+</option><option value="3">3 - Easy</option><option value="4">4 - Easy+</option><option value="5">5 - Mid</option><option value="6">6 - Mid+</option><option value="7">7 - Advanced</option><option value="8">8 - Advanced+</option><option value="9">9 - Expert</option><option value="10">10 - Master</option>
+      </select>
+    </div>
+    <div class="form-section"><label class="form-label">API Key</label><input class="form-input" type="password" id="settingsApiKey"/></div>
+    <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
+    <div style="margin-top:16px"></div>
+    <button class="btn-done" onclick="resetApp()" style="border-color:#f87171;color:#f87171">Reset All Data</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="bottom-nav nav-hidden" id="bottomNav">
+  <button class="nav-btn active" id="nav-dashboard" onclick="showScreen('dashboard')"><span class="nav-icon">&#x1F3E0;</span>Home</button>
+  <button class="nav-btn" id="nav-history" onclick="showScreen('history')"><span class="nav-icon">&#x1F4CB;</span>History</button>
+  <button class="nav-btn" id="nav-settings" onclick="showScreen('settings')"><span class="nav-icon">&#x2699;&#xFE0F;</span>Settings</button>
+</div>
+
+<script>
+var state = {};
+var pendingApiKey = '';
+var selectedSubjects = ['math','science','english','history'];
+var currentQuiz = {subject:null, question:null};
+var LEVEL_NAMES = ['','Beginner','Beginner+','Easy','Easy+','Mid','Mid+','Advanced','Advanced+','Expert','Master'];
+var SUBJECT_LABELS = {math:'Math',science:'Science',english:'English',history:'History'};
+var COLORS = {math:'--math',science:'--science',english:'--english',history:'--history'};
+
+function save(){ localStorage.setItem('brainlift_v2', JSON.stringify(state)); }
+function load(){ var r=localStorage.getItem('brainlift_v2'); return r?JSON.parse(r):null; }
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+
+function subjectEmoji(s){ return {math:'&#x1F522;',science:'&#x1F52C;',english:'&#x1F4D6;',history:'&#x1F3DB;'}[s]; }
+
+window.onload = function(){
+  var saved = load();
+  if(saved && saved.setupDone){
+    state = saved;
+    renderDashboard();
+    showScreen('dashboard');
+  } else {
+    showScreen('onboarding');
+    goOStep(1);
+  }
+};
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('screen-'+id).classList.add('active');
+  var nav = document.getElementById('bottomNav');
+  if(id==='setup'||id==='onboarding'){ nav.classList.add('nav-hidden'); }
+  else { nav.classList.remove('nav-hidden'); }
+  ['dashboard','history','settings'].forEach(function(n){
+    var el = document.getElementById('nav-'+n);
+    if(el) el.classList.toggle('active', n===id);
+  });
+  if(id==='history') renderHistory();
+  if(id==='settings') loadSettings();
+}
+
+function goOStep(n){
+  for(var i=1;i<=4;i++){
+    var el = document.getElementById('ostep-'+i);
+    if(el) el.classList.toggle('active', i===n);
+    var dot = document.getElementById('dot-'+i);
+    if(dot) dot.classList.toggle('active', i===n);
+  }
+}
+
+function toggleKeyVis(){
+  var inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+}
+
+function validateAndContinue(){
+  var key = document.getElementById('apiKeyInput').value.trim();
+  var err = document.getElementById('keyError');
+  err.style.display = 'none'; err.textContent = '';
+  if(!key){ err.textContent='Please paste your API key.'; err.style.display='block'; return; }
+  if(!key.startsWith('sk-ant-')){ err.textContent='Key should start with sk-ant- — check you copied the whole thing.'; err.style.display='block'; return; }
+  if(key.length < 40){ err.textContent='Key seems too short — make sure you copied all of it.'; err.style.display='block'; return; }
+  pendingApiKey = key;
+  var disp = document.getElementById('apiKeyDisplay');
+  if(disp) disp.value = key;
+  showScreen('setup');
+}
+
+function goToOnboarding(){
+  showScreen('onboarding');
+  goOStep(4);
+  var ki = document.getElementById('apiKeyInput');
+  if(ki && pendingApiKey) ki.value = pendingApiKey;
+}
+
+function toggleSubject(el){
+  var s = el.dataset.subject;
+  var idx = selectedSubjects.indexOf(s);
+  if(idx > -1){
+    if(selectedSubjects.length===1) return;
+    selectedSubjects.splice(idx,1);
+    el.className = 'subject-toggle';
+  } else {
+    selectedSubjects.push(s);
+    el.className = 'subject-toggle active-'+s;
+  }
+  ['math','science','english','history'].forEach(function(sub){
+    var row = document.getElementById('lvl-'+sub);
+    if(row) row.style.display = selectedSubjects.indexOf(sub)>-1 ? '' : 'none';
+  });
+}
+
+function startApp(){
+  var apiKey = pendingApiKey || document.getElementById('apiKeyInput').value.trim();
+  var name = document.getElementById('nameInput').value.trim();
+  var grade = document.getElementById('gradeInput').value;
+  var goal = parseInt(document.getElementById('goalInput').value);
+  if(!apiKey){ alert('Please enter your API key first.'); goToOnboarding(); return; }
+  if(!name){ alert('Please enter your name.'); return; }
+  var levels = {};
+  selectedSubjects.forEach(function(s){ levels[s] = parseInt(document.getElementById('level-'+s).value); });
+  state = {setupDone:true, apiKey:apiKey, name:name, grade:grade, goal:goal, subjects:selectedSubjects.slice(), levels:levels, todayDone:{}, history:[], streak:0, lastStreakDate:null};
+  save();
+  renderDashboard();
+  showScreen('dashboard');
+}
+
+function renderDashboard(){
+  document.getElementById('dashGreeting').innerHTML = 'Hey, '+state.name+'! &#x1F44B;';
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('streakCount').textContent = (state.streak||0)+' day streak';
+  var container = document.getElementById('subjectCards');
+  container.innerHTML = '';
+  state.subjects.forEach(function(s){
+    var lv = state.levels[s];
+    var pct = Math.min(100, Math.round((lv/state.goal)*100));
+    container.innerHTML += '<div class="subject-card '+s+'"><div class="sc-name">'+SUBJECT_LABELS[s]+'</div><div class="sc-level">'+lv+'<span>/ '+state.goal+'</span></div><div class="sc-goal">Goal: Level '+state.goal+' &middot; '+LEVEL_NAMES[state.goal]+'</div><div class="sc-progress"><div class="sc-progress-bar" style="width:'+pct+'%"></div></div></div>';
+  });
+  var next = getNextSubject();
+  var section = document.getElementById('todaySection');
+  if(!next){
+    section.innerHTML = '<div class="done-card"><div class="done-icon">&#x1F389;</div><div style="font-family:Syne,sans-serif;font-size:18px;font-weight:700;margin-bottom:6px">All done for today!</div><div>Come back tomorrow for your next questions.</div></div>';
+  } else {
+    var color = 'var('+COLORS[next]+')';
+    section.innerHTML = '<div class="today-card"><div class="today-subject-badge bg-'+next+'" style="color:'+color+'">'+subjectEmoji(next)+' '+SUBJECT_LABELS[next]+'</div><div class="today-label">Today\'s Question</div><div class="today-sub">Level '+state.levels[next]+' &middot; '+LEVEL_NAMES[state.levels[next]]+'</div><button class="btn-go" onclick="startQuiz(\''+next+'\')">Answer Now &#x2192;</button></div>';
+  }
+}
+
+function getNextSubject(){
+  var today = todayKey();
+  for(var i=0;i<state.subjects.length;i++){
+    if(state.todayDone[state.subjects[i]] !== today) return state.subjects[i];
+  }
+  return null;
+}
+
+async function startQuiz(subject){
+  currentQuiz = {subject:subject, question:null};
+  showScreen('quiz');
+  var pill = document.getElementById('quizSubjectPill');
+  pill.innerHTML = subjectEmoji(subject)+' '+SUBJECT_LABELS[subject];
+  pill.className = 'quiz-subject-pill bg-'+subject;
+  pill.style.color = 'var('+COLORS[subject]+')';
+  document.getElementById('quizLevelTag').textContent = 'Level '+state.levels[subject]+' \u00b7 '+LEVEL_NAMES[state.levels[subject]];
+  var qbox = document.getElementById('questionBox');
+  qbox.innerHTML = '<div class="question-loading">Generating your question<span class="loading-dots"><span></span><span></span><span></span></span></div>';
+  var ans = document.getElementById('answerInput');
+  ans.value = ''; ans.disabled = true;
+  document.getElementById('submitBtn').disabled = true;
+  try {
+    var q = await generateQuestion(subject, state.levels[subject]);
+    currentQuiz.question = q;
+    qbox.innerHTML = '<div class="question-text">'+q+'</div>';
+    ans.disabled = false;
+    document.getElementById('submitBtn').disabled = false;
+    ans.focus();
+  } catch(e) {
+    var msg = e.message||'';
+    var hint = msg.includes('401') ? '&#x274C; Invalid API key. Go to Settings and update it.' :
+               msg.includes('403') ? '&#x274C; No credit on account. Add billing at console.anthropic.com.' :
+               msg.includes('429') ? '&#x274C; Rate limit hit. Wait a moment and try again.' :
+               '&#x274C; Error '+msg+'. Check your API key in Settings.';
+    qbox.innerHTML = '<div class="question-loading" style="color:#f87171;line-height:1.6">'+hint+'</div>';
+  }
+}
+
+async function generateQuestion(subject, level){
+  var prompt = 'You are a quiz generator for a '+state.grade+'th grade middle school student.\nGenerate exactly ONE '+subject+' question at difficulty level '+level+'/10 ('+LEVEL_NAMES[level]+').\nReturn ONLY the question itself, no preamble, no numbering.';
+  var res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':state.apiKey,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:prompt}]})
+  });
+  if(!res.ok) throw new Error(String(res.status));
+  var data = await res.json();
+  return data.content[0].text.trim();
+}
+
+async function submitAnswer(){
+  var answer = document.getElementById('answerInput').value.trim();
+  if(!answer || !currentQuiz.question) return;
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('answerInput').disabled = true;
+  var qbox = document.getElementById('questionBox');
+  qbox.innerHTML = '<div class="question-loading">Evaluating your answer<span class="loading-dots"><span></span><span></span><span></span></span></div>';
+  try {
+    var result = await evaluateAnswer(currentQuiz.subject, currentQuiz.question, answer, state.levels[currentQuiz.subject]);
+    showResult(result, currentQuiz.subject, answer);
+  } catch(e) {
+    qbox.innerHTML = '<div class="question-loading" style="color:#f87171">Error evaluating. Please try again.</div>';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('answerInput').disabled = false;
+  }
+}
+
+async function evaluateAnswer(subject, question, answer, level){
+  var prompt = 'You are a fair middle school teacher grading a '+subject+' question.\nQuestion: '+question+'\nStudent answer: '+answer+'\nDifficulty: '+level+'/10\n\nRespond with ONLY a JSON object (no markdown):\n{"correct":true/false,"score":0-100,"explanation":"2-3 sentences","levelChange":1/0/-1}\n\nRules: score 80-100 = levelChange 1, score 40-79 = levelChange 0, score 0-39 = levelChange -1';
+  var res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':state.apiKey,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
+  });
+  if(!res.ok) throw new Error(String(res.status));
+  var data = await res.json();
+  var text = data.content[0].text.trim().replace(/```json|```/g,'');
+  return JSON.parse(text);
+}
+
+function showResult(result, subject, answer){
+  var oldLevel = state.levels[subject];
+  var newLevel = Math.min(10, Math.max(1, oldLevel + result.levelChange));
+  state.levels[subject] = newLevel;
+  state.todayDone[subject] = todayKey();
+  updateStreak();
+  state.history.unshift({date:new Date().toISOString(),subject:subject,question:currentQuiz.question,answer:answer,correct:result.correct,score:result.score,levelBefore:oldLevel,levelAfter:newLevel});
+  save();
+  showScreen('result');
+  document.getElementById('resultIcon').textContent = result.correct ? '\u2705' : '\u274C';
+  document.getElementById('resultVerdict').textContent = result.correct ? 'Correct!' : 'Not quite!';
+  document.getElementById('resultVerdict').className = 'result-verdict '+(result.correct?'correct':'incorrect');
+  document.getElementById('resultSub').textContent = 'Score: '+result.score+'/100';
+  document.getElementById('resultExplanation').innerHTML = '<h4>Explanation</h4><p>'+result.explanation+'</p>';
+  var cls = result.levelChange>0?'up':result.levelChange<0?'down':'same';
+  var lbl = result.levelChange>0?'\u2191 Level Up!':result.levelChange<0?'\u2193 Level Down':'\u2192 Same Level';
+  document.getElementById('levelChange').innerHTML = '<div class="lc-before"><span>'+SUBJECT_LABELS[subject]+'</span><strong>'+oldLevel+'</strong></div><div class="lc-arrow">\u2192</div><div class="lc-after"><span>'+lbl+'</span><strong class="'+cls+'">'+newLevel+'</strong></div>';
+  renderDashboard();
+}
+
+function updateStreak(){
+  var today = todayKey();
+  var yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(state.lastStreakDate===today) return;
+  state.streak = state.lastStreakDate===yesterday ? (state.streak||0)+1 : 1;
+  state.lastStreakDate = today;
+}
+
+function renderHistory(){
+  var list = document.getElementById('historyList');
+  if(!state.history||state.history.length===0){
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px 0">No history yet. Answer your first question!</div>';
+    return;
+  }
+  list.innerHTML = state.history.slice(0,50).map(function(h){
+    var d = new Date(h.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    var color = 'var('+COLORS[h.subject]+')';
+    return '<div class="history-item"><div class="hi-dot" style="background:'+color+'"></div><div class="hi-info"><div class="hi-subject" style="color:'+color+'">'+SUBJECT_LABELS[h.subject]+' \u00b7 Lvl '+h.levelBefore+'\u2192'+h.levelAfter+'</div><div class="hi-question">'+h.question.slice(0,80)+(h.question.length>80?'\u2026':'')+'</div></div><div style="text-align:right"><div class="hi-result '+(h.correct?'correct':'incorrect')+'">'+h.score+'/100</div><div class="hi-date">'+d+'</div></div></div>';
+  }).join('');
+}
+
+function loadSettings(){
+  document.getElementById('settingsName').value = state.name||'';
+  document.getElementById('settingsGrade').value = state.grade||'6';
+  document.getElementById('settingsGoal').value = state.goal||'8';
+  document.getElementById('settingsApiKey').value = state.apiKey||'';
+}
+
+function saveSettings(){
+  var n = document.getElementById('settingsName').value.trim();
+  if(n) state.name = n;
+  state.grade = document.getElementById('settingsGrade').value;
+  state.goal = parseInt(document.getElementById('settingsGoal').value);
+  var k = document.getElementById('settingsApiKey').value.trim();
+  if(k) state.apiKey = k;
+  save(); renderDashboard(); showScreen('dashboard');
+}
+
+function resetApp(){
+  if(confirm('This will delete all your progress. Are you sure?')){
+    localStorage.removeItem('brainlift_v2');
+    location.reload();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var ai = document.getElementById('answerInput');
+  if(ai){
+    ai.addEventListener('input', function(){ document.getElementById('submitBtn').disabled = !ai.value.trim(); });
+    ai.addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); submitAnswer(); } });
+  }
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>
